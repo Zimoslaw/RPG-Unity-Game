@@ -12,6 +12,8 @@ public class camControl : MonoBehaviour {
 	public float cameraSpeed = 10f; //prędkość podążania kamery za graczem
 	float scroll = 0; //w którą stronę scroll jest kręcony
 	public float playerRotSpeed = 5f; //prędkość obrotu gracza
+	float interaTimer = 0; //licznik czasu interakcji
+	float interaTime = 0; //czas interakcji
 
 	public Vector3 offset; //odległość przewodnika od targetu
 
@@ -20,6 +22,9 @@ public class camControl : MonoBehaviour {
 
 	public GameObject guide; //przewodnik kamery
 	public GameObject cam; //kamera gracza
+	GameObject pickable; //przedmiot z klikniętego obiektu do interakcji
+
+	bool isInteraClicked = false; //czy obietk do interakcji został kniety
 
 	Ray mouseRay; //promien wychodzący z kursora myszy
 	RaycastHit mouseHit; //gdzie myszka wskazuje (na scenie)
@@ -47,6 +52,15 @@ public class camControl : MonoBehaviour {
 				PlayerRotating();
 				Cursor.visible = true;
 			}
+			
+			if(isInteraClicked) {
+				interaTimer += Time.deltaTime;
+				if(interaTimer >= interaTime + Mathf.Epsilon) {
+					player.GetComponent<inventory>().AddItem(pickable);
+					interaTimer = 0;
+					isInteraClicked = false;
+				}
+			}
 
 		} else {
 			cam.transform.position = new Vector3(Mathf.Lerp(cam.transform.position.x, guide.transform.position.x, cameraSpeed * Time.deltaTime), Mathf.Lerp(cam.transform.position.y, guide.transform.position.y, cameraSpeed * Time.deltaTime), Mathf.Lerp(cam.transform.position.z, guide.transform.position.z, cameraSpeed * Time.deltaTime)); //kamera podąża za przewodnikiem
@@ -60,6 +74,15 @@ public class camControl : MonoBehaviour {
 		player.rotation = Quaternion.Lerp(player.rotation, playerGuide.rotation, playerRotSpeed * Time.deltaTime); //płynne obracanie gracza w stronę, w którą celuje celownik
 		if (Physics.Raycast(mouseRay, out mouseHit)) { //gdzie w scenie padł promień
 			playerGuide.rotation = Quaternion.Euler(new Vector3(0, Mathf.Atan2(mouseHit.point.x - playerGuide.position.x, mouseHit.point.z - playerGuide.position.z) * Mathf.Rad2Deg, 0)); //obracanie celownika w stronę punktu uderzenia promienia
+			if(mouseHit.collider.CompareTag("Interactable")) {
+				if(Input.GetMouseButtonDown(0)) {
+					pickable = mouseHit.collider.GetComponent<interactable>().pickables[0];
+					interaTime = mouseHit.collider.GetComponent<interactable>().interactionTime;
+					isInteraClicked = true;
+					interaTimer = 0;
+					mouseHit.collider.enabled = false;
+				}
+			}
 		}
 	}
 
