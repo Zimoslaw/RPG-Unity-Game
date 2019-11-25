@@ -4,6 +4,7 @@ using System.Collections;
 public class camControl : MonoBehaviour {
 
 	public bool isControlledByPlayer = true; //przełącznik sterowania kamerą przez gracza lub przez grę
+	bool isInteraLoot;
 
 	float yRotation = 0; //ruch myszy w osi poziomej, wykorzystywany w trybie obrotu kamery
 	public float cameraSensitivity = 5f; //czułość obracania przy trybie obrotu kamery
@@ -22,9 +23,13 @@ public class camControl : MonoBehaviour {
 
 	public GameObject guide; //przewodnik kamery
 	public GameObject cam; //kamera gracza
-	GameObject pickable; //przedmiot z klikniętego obiektu do interakcji
+	GameObject[] pickables; //przedmiot z klikniętego obiektu do interakcji
+	Transform clickedObj;
+	public Collider lookingAt; //przedmiot na który wskazuje gracz
 
-	bool isInteraClicked = false; //czy obietk do interakcji został kniety
+	bool isInteraClicked = false; //czy obiekt do interakcji został klikniety
+
+	string interaText;
 
 	Ray mouseRay; //promien wychodzący z kursora myszy
 	RaycastHit mouseHit; //gdzie myszka wskazuje (na scenie)
@@ -53,12 +58,15 @@ public class camControl : MonoBehaviour {
 				Cursor.visible = true;
 			}
 			
-			if(isInteraClicked) {
+			if(isInteraClicked) { //licznik czasu interakcji
 				interaTimer += Time.deltaTime;
 				if(interaTimer >= interaTime + Mathf.Epsilon) {
-					player.GetComponent<inventory>().AddItem(pickable);
-					interaTimer = 0;
-					isInteraClicked = false;
+					if(isInteraLoot)
+					{
+						gameObject.GetComponent<gui>().DisplayPick(pickables, transform, clickedObj);
+						interaTimer = 0;
+						isInteraClicked = false;
+					}
 				}
 			}
 
@@ -74,13 +82,18 @@ public class camControl : MonoBehaviour {
 		player.rotation = Quaternion.Lerp(player.rotation, playerGuide.rotation, playerRotSpeed * Time.deltaTime); //płynne obracanie gracza w stronę, w którą celuje celownik
 		if (Physics.Raycast(mouseRay, out mouseHit)) { //gdzie w scenie padł promień
 			playerGuide.rotation = Quaternion.Euler(new Vector3(0, Mathf.Atan2(mouseHit.point.x - playerGuide.position.x, mouseHit.point.z - playerGuide.position.z) * Mathf.Rad2Deg, 0)); //obracanie celownika w stronę punktu uderzenia promienia
-			if(mouseHit.collider.CompareTag("Interactable")) {
-				if(Input.GetMouseButtonDown(0)) {
-					pickable = mouseHit.collider.GetComponent<interactable>().pickables[0];
-					interaTime = mouseHit.collider.GetComponent<interactable>().interactionTime;
+			lookingAt = mouseHit.collider; // na jaki obiekt patrzy
+			if (Input.GetMouseButtonDown(0)) {
+				if (lookingAt.CompareTag("Interactable") && Vector3.Distance(player.position,lookingAt.transform.position) <= 3) { // jeßli jest to obiekt do interakcji
+					isInteraLoot = mouseHit.collider.GetComponent<interactable>().isLoot; //czy obiekt zawiera przedmioty do zebrania
+					pickables = mouseHit.collider.GetComponent<interactable>().pickables; // przedmioty w obiekcie interakcji
+					interaTime = mouseHit.collider.GetComponent<interactable>().interactionTime; //czas potrzebny na wykonanie interakcji
+					interaText = mouseHit.collider.GetComponent<interactable>().interactionText; //teks do wyświetlenia na progress barze
+					clickedObj = mouseHit.transform;
 					isInteraClicked = true;
 					interaTimer = 0;
 					mouseHit.collider.enabled = false;
+					gameObject.GetComponent<gui>().DisplayProgressBar(interaTime, interaText);
 				}
 			}
 		}

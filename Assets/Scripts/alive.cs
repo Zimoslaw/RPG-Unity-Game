@@ -39,7 +39,7 @@ public class alive : MonoBehaviour
 	public void UpdateStats() {
 		hp = (2 * strenght + 2 * spirit) + basicHp;
 		stamina = (5 * strenght) + 10;
-		gameObject.GetComponent<playerControl>().playerMaxSpeed = 256 + (2 * agility);
+		gameObject.GetComponent<playerControl>().playerMaxSpeed = (256 + (2 * agility)) * MoveSpeed;
 		gameObject.GetComponent<playerControl>().globalCooldown = 2.5f - (agility * 0.01f);
 		mana = (5 * spirit) + 10;
 	}

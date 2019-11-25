@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 using UnityEngine;
 
 public class playerControl : MonoBehaviour {
@@ -13,7 +14,8 @@ public class playerControl : MonoBehaviour {
 	public int attackDamage = 0; //obrażenia fizyczne pobrane z ekwipunku + ze statystyk
 	public int magicDamage = 0; //obrażenia magiczne pobrane z ekwipunku + ze statystyk
 	public float range = 0; //zasięg broni białej
-	public float speed = 0;
+	public int angle = 0; //szerokość działania broni białej
+	public float speed = 0; //prędkość pocisku czaru
 
     public Rigidbody self; //fizyka gracza
     public GameObject camTarget; //punkt odniesienia kamery
@@ -61,22 +63,25 @@ public class playerControl : MonoBehaviour {
 
 
 			if(cooldownTimer >= globalCooldown + Mathf.Epsilon) {
-				if (Input.GetMouseButtonDown(0)) { //przycisk głównego ataku (broń w ręce)
-					weaponType = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().type;
-					attackDamage = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().attackDamage += (gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().attackDamage * (int)Mathf.Floor(gameObject.GetComponent<alive>().strenght * 0.01f * GetComponent<alive>().attackDamage));
-					magicDamage = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().magicDamage += (gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().magicDamage * (int)Mathf.Floor(gameObject.GetComponent<alive>().spirit * 0.01f * GetComponent<alive>().magicDamage));
+				if(!camTarget.GetComponent<camControl>().lookingAt.CompareTag("Interactable") && !EventSystem.current.IsPointerOverGameObject()) {
+					if (Input.GetMouseButtonDown(0)) { //przycisk głównego ataku (broń w ręce)
+						weaponType = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().type;
+						attackDamage = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().attackDamage + (gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().attackDamage * (int)Mathf.Floor(gameObject.GetComponent<alive>().strenght * 0.01f * GetComponent<alive>().attackDamage));
+						magicDamage = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().magicDamage + (gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().magicDamage * (int)Mathf.Floor(gameObject.GetComponent<alive>().spirit * 0.01f * GetComponent<alive>().magicDamage));
 
-					if (weaponType == "ranged weapon") { //jeśli broń jest dystansowa
-						speed = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().speed; //prędkość pocisku
-						weapon = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().projectile; //pocisk
-						gameObject.GetComponent<skills.ranged>().Cast(gameObject, speed, weapon, attackDamage, magicDamage); //gracz, pocisk, obrażenia
-						cooldownTimer = 0;
-					}
-					if (weaponType == "melee weapon") {
-						range = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().range;
-						weapon = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().projectile; //wizualna akcja
-						gameObject.GetComponent<skills.melee>().Cast(gameObject, range, weapon, attackDamage, magicDamage); //gracz, zasięg, obrażenia
-						cooldownTimer = 0;
+						if (weaponType == "ranged weapon") { //jeśli broń jest dystansowa
+							speed = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().speed; //prędkość pocisku
+							weapon = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().projectile; //pocisk
+							gameObject.GetComponent<skills.ranged>().Cast(gameObject, speed, weapon, attackDamage, magicDamage); //gracz, pocisk, obrażenia
+							cooldownTimer = 0;
+						}
+						if (weaponType == "melee weapon") {
+							range = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().range;
+							angle = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().angle;
+							weapon = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().projectile; //wizualna akcja
+							gameObject.GetComponent<skills.melee>().Cast(gameObject, range, angle, weapon, attackDamage, magicDamage); //gracz, zasięg, obrażenia
+							cooldownTimer = 0;
+						}
 					}
 				}
 			}
