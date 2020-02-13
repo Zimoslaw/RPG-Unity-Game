@@ -5,15 +5,21 @@ using UnityEngine;
 public class gui : MonoBehaviour
 {
 	public Camera cam;
-	public UnityEngine.UI.Image pick;
-	public UnityEngine.UI.Slider progressBar;
-	public UnityEngine.UI.Text progressBarText;
-	public UnityEngine.UI.Image progressBarFill;
+	public UnityEngine.UI.Image inventory; //okno ekwipunku
+	public UnityEngine.UI.Image pick; //okno lootu
+	public UnityEngine.UI.Slider progressBar; //pasek postępu
+	public UnityEngine.UI.Text progressBarText; //text wyświetlany na pasku postępu
+	public UnityEngine.UI.Image progressBarFill; //wypełnienie paska postępu
+	public UnityEngine.UI.Image itemMenu; //okno menu przedmiotu w ekwipunku
+	public UnityEngine.UI.Text infos; //text wiadomości dla gracza
 
 	float duration = 1;
 	float timer1 = 0;
+	float timer2 = 0;
 
 	bool isProgress = false;
+	bool isProgressCancelled = false;
+	bool isInfoDisplayed = false;
 
 	void Start()
     {
@@ -22,55 +28,121 @@ public class gui : MonoBehaviour
 	
     void Update()
     {
-		if(isProgress)
+		if(isProgress) //odliczanie postępu czynności
 		{
 			progressBar.value += Time.deltaTime / duration;
 			if(progressBar.value >= 1 + Mathf.Epsilon)
 			{
 				progressBar.value = 1;
-				progressBarFill.color = new Color(0,0.7f,0);
+				if(!isProgressCancelled) //jeśli czynność nie została anulowana
+					progressBarFill.color = new Color(0,0.7f,0); //zielony
+				else
+					progressBarFill.color = new Color(0.7f, 0, 0); //czerwony
 				timer1 += Time.deltaTime;
 				if(timer1 >= 0.2f + Mathf.Epsilon)
 				{
 					timer1 = 0;
 					isProgress = false;
+					isProgressCancelled = false;
 					progressBar.gameObject.SetActive(false);
 					progressBarFill.color = new Color(0, 0.5f, 0.9f);
 				}
 			}
 		}
-	}
 
-	public void DisplayPick(GameObject[] pickables, Transform plyr, Transform clckdObj)
-	{
-		pick.GetComponent<guiWindow>().player = plyr;
-		pick.GetComponent<guiWindow>().clickedObj= clckdObj;
-		pick.GetComponent<guiWindow>().RefreshPickItems();//usuń poprzednie obiekty z gui_pick
-		pick.rectTransform.anchoredPosition = Input.mousePosition;//pozycja okna taka jak pozycja kursora
-		int x = 7, y = -25;
-		foreach(GameObject p in pickables)
+		if(isInfoDisplayed) //odliczanie czasu widoczności wiadomości
 		{
-			GameObject clone = Instantiate(p, pick.rectTransform);
-			clone.transform.localPosition = new Vector3(x,y,0);
-			if(x%73==0)//jeśli cały rząd jest zapełniony
+			timer2 += Time.deltaTime;
+			if(timer2 >= 2 + Mathf.Epsilon)
 			{
-				y -= 66;//przejdź do następnego rzędu
-				x = 7;
-			}
-			else
-			{
-				x += 66;
+				timer2 = 0;
+				isInfoDisplayed = false;
+				infos.gameObject.SetActive(false);
 			}
 		}
-		pick.gameObject.SetActive(true);
 	}
 
-	public void DisplayProgressBar(float drtn, string text)
+	public void DisplayPick(GameObject[] pickables, Transform plyr, Collider clckdObj) //wyświetlenie okna z lootem
+	{
+		int i = 0;
+		pick.GetComponent<guiWindow>().RefreshPickItems();//usuń poprzednie obiekty z gui_pick
+
+		foreach(GameObject p in pickables)
+		{
+			if(p != null)
+			{
+				pick.GetComponent<guiWindow>().itemButtons[i].GetComponent<ItemButton>().item = p;
+				//pick.GetComponent<guiWindow>().itemButtons[i].GetComponent<ItemButton>().player = plyr;
+				pick.GetComponent<guiWindow>().itemButtons[i].GetComponent<ItemButton>().interactable = clckdObj.transform;
+				pick.GetComponent<guiWindow>().itemButtons[i].SetActive(true);
+				i++;
+			}
+		}
+		if(i != 0)
+		{
+			pick.rectTransform.anchoredPosition = Input.mousePosition;//pozycja okna taka jak pozycja kursora
+			pick.gameObject.SetActive(true);
+		}
+		else
+		{
+			clckdObj.enabled = false;
+			DisplayInfo("Brak przedmiotów do zebrania");
+		}
+	}
+
+	public void DisplayProgressBar(float drtn, string text) //wyswietlenie paska postępu czynności
 	{
 		duration = drtn;
 		progressBarText.text = text;
 		progressBar.value = 0;
 		progressBar.gameObject.SetActive(true);
 		isProgress = true;
+	}
+
+	public void CancelProgress() //anulowanie czynności
+	{
+		pick.GetComponent<guiWindow>().Close();
+		if (isProgress)
+		{
+			progressBar.value = 1;
+			isProgressCancelled = true;
+		}
+	}
+
+	public void DisplayItemMenu(int index)
+	{
+		itemMenu.GetComponent<guiWindow>().itemIndex = index;
+		itemMenu.rectTransform.anchoredPosition = Input.mousePosition;//pozycja okna taka jak pozycja kursora
+		itemMenu.gameObject.SetActive(true);
+	}
+
+	public void DisplayInventory(GameObject player)
+	{
+		if(!inventory.gameObject.activeInHierarchy)
+		{
+			int i = 0;
+			GameObject[] items = player.GetComponent<inventory>().slots;
+			foreach(GameObject x in items)
+			{
+				if(x != null)
+				{
+					inventory.GetComponent<guiWindow>().itemButtons[i].GetComponent<ItemButton>().item = x;
+					inventory.GetComponent<guiWindow>().itemButtons[i].SetActive(true);
+				}
+				i++;
+			}
+			inventory.gameObject.SetActive(true);
+		}
+		else
+		{
+			inventory.gameObject.SetActive(false);
+		}
+	}
+
+	public void DisplayInfo(string s) //wyświetlenie wiadomości do gracza na ekran
+	{
+		infos.text = s;
+		infos.gameObject.SetActive(true);
+		isInfoDisplayed = true;
 	}
 }

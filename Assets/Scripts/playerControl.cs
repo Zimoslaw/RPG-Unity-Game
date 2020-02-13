@@ -31,36 +31,51 @@ public class playerControl : MonoBehaviour {
 
     void FixedUpdate() {
 		
-		if(camTarget.GetComponent<camControl>().isControlledByPlayer) {
-			//if (!Input.GetMouseButton(1)) { //jeśli nie jest wciśnięty prawy przycisk myszy (tryb normalny w camControl)
-				if (Input.GetKey(KeyCode.W)) {
-					ForwardMove(); //ruch do przodu
+		if(camTarget.GetComponent<camControl>().isControlledByPlayer)
+		{
+			if (Input.GetKey(KeyCode.W))
+			{
+				ForwardMove(); //ruch do przodu
+				guide = transform.position;
+				camTarget.GetComponent<camControl>().CancelInteraProgress(); //anulowanie wykonywanej akcji
+			} else
+			{
+				if (Input.GetKey(KeyCode.S))
+				{
+					BackwardsMove(); //ruch do tyłu
 					guide = transform.position;
-				} else {
-					if (Input.GetKey(KeyCode.S)) {
-						BackwardsMove(); //ruch do tyłu
-						guide = transform.position;
-					} else {
-						if (Input.GetKeyDown(KeyCode.D)) { //przewrót w prawo
-							if (flipTimer >= flipCooldown + Mathf.Epsilon) { //jeśli minęły 3 sekundy od ostatniego przewrotu
-								FlipRight();
-								flipTimer = 0;
-							}
+					camTarget.GetComponent<camControl>().CancelInteraProgress(); //anulowanie wykonywanej akcji
+				} else
+				{
+					if (Input.GetKeyDown(KeyCode.D))
+					{ //przewrót w prawo
+						if (flipTimer >= flipCooldown + Mathf.Epsilon)
+						{ //jeśli minęły 3 sekundy od ostatniego przewrotu
+							FlipRight();
+							flipTimer = 0;
+							camTarget.GetComponent<camControl>().CancelInteraProgress(); //anulowanie wykonywanej akcji
 						}
-						if (Input.GetKeyDown(KeyCode.A)) { //przewrót w lewo
-							if (flipTimer >= flipCooldown + Mathf.Epsilon) { //jeśli minęły 3 sekundy od ostatniego przewrotu
-								FlipLeft();
-								flipTimer = 0;
-							}
+					}
+					if (Input.GetKeyDown(KeyCode.A))
+					{ //przewrót w lewo
+						if (flipTimer >= flipCooldown + Mathf.Epsilon)
+						{ //jeśli minęły 3 sekundy od ostatniego przewrotu
+							FlipLeft();
+							flipTimer = 0;
+							camTarget.GetComponent<camControl>().CancelInteraProgress(); //anulowanie wykonywanej akcji
 						}
 					}
 				}
-			//}
+			}
 			if (flipTimer <= 0.5f + Mathf.Epsilon) {
 				transform.position = new Vector3(Mathf.Lerp(transform.position.x, guide.x, Time.deltaTime + 0.1f), Mathf.Lerp(transform.position.y, transform.position.y, 1), Mathf.Lerp(transform.position.z, guide.z, Time.deltaTime + 0.1f)); //gracz podąża za punktem pomocniczym
 			}
 			flipTimer += Time.deltaTime;
 
+			if(Input.GetKeyDown(KeyCode.I))
+			{
+				camTarget.GetComponent<gui>().DisplayInventory(gameObject);
+			}
 
 			if(cooldownTimer >= globalCooldown + Mathf.Epsilon) {
 				if(!camTarget.GetComponent<camControl>().lookingAt.CompareTag("Interactable") && !EventSystem.current.IsPointerOverGameObject()) {

@@ -4,37 +4,49 @@ using UnityEngine;
 
 public class guiWindow : MonoBehaviour
 {
-	public Transform player = null, clickedObj = null;
-	// Start is called before the first frame update
-	void Start()
-    {
-        
-    }
+	public bool isGuiPick = false;
+	public int itemIndex; //potrzebne przy ItemMenu
+	public Transform player = null, clickedObj = null; //potrzebne przy ItemMenu i GuiPick
+	public GameObject[] itemButtons; //potrzebne przy GuiPick
 
-    // Update is called once per frame
-    void Update()
+	void Update()
     {
-		if(player != null && clickedObj != null) //zamyka okno jeśli gracz oddali się za bardzo
+		if(isGuiPick)
 		{
-			if (Vector3.Distance(player.position, clickedObj.position) > 3)
+			if(player != null && clickedObj != null) //zamyka okno jeśli gracz oddali się za bardzo
 			{
-				Close();
+				if(Vector3.Distance(player.position, clickedObj.position) > 3)
+				{
+					Close();
+				}
 			}
 		}
     }
 
 	public void RefreshPickItems() //usuwa poprzednie przedmioty z gui_pick
 	{
-		foreach (Transform child in transform)
+		foreach (GameObject b in itemButtons)
 		{
-			if (child.GetComponent<pickable>() != null)
-			{
-				Destroy(child.gameObject);
-			}
+			b.SetActive(false);
 		}
 	}
 
-	void Close() //zamyka okno
+	public void ItemMenuButtonClicked(int button) //wywołuje akcję gdy jest wybrana opcja z ItemMenu
+	{
+		if(button == 0) //użyj przedmiotu
+		{
+			player.GetComponent<inventory>().AddUsable(itemIndex);
+			Close();
+		}
+		if(button == 1) //wyrzyć przedmiot
+		{
+			player.GetComponent<inventory>().ThrowOut(itemIndex);
+			player.GetComponent<playerControl>().camTarget.GetComponent<gui>().inventory.GetComponent<guiWindow>().itemButtons[itemIndex].SetActive(false);
+			Close();
+		}
+	}
+
+	public void Close() //zamyka okno
 	{
 		gameObject.SetActive(false);
 	}

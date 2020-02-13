@@ -23,8 +23,8 @@ public class camControl : MonoBehaviour {
 
 	public GameObject guide; //przewodnik kamery
 	public GameObject cam; //kamera gracza
+	Collider clickedObj;
 	GameObject[] pickables; //przedmiot z klikniętego obiektu do interakcji
-	Transform clickedObj;
 	public Collider lookingAt; //przedmiot na który wskazuje gracz
 
 	bool isInteraClicked = false; //czy obiekt do interakcji został klikniety
@@ -61,11 +61,15 @@ public class camControl : MonoBehaviour {
 			if(isInteraClicked) { //licznik czasu interakcji
 				interaTimer += Time.deltaTime;
 				if(interaTimer >= interaTime + Mathf.Epsilon) {
-					if(isInteraLoot)
+					if (isInteraLoot)
 					{
-						gameObject.GetComponent<gui>().DisplayPick(pickables, transform, clickedObj);
+						gameObject.GetComponent<gui>().DisplayPick(pickables, player, clickedObj);
 						interaTimer = 0;
 						isInteraClicked = false;
+					}
+					else
+					{
+						clickedObj.enabled = false;
 					}
 				}
 			}
@@ -84,15 +88,15 @@ public class camControl : MonoBehaviour {
 			playerGuide.rotation = Quaternion.Euler(new Vector3(0, Mathf.Atan2(mouseHit.point.x - playerGuide.position.x, mouseHit.point.z - playerGuide.position.z) * Mathf.Rad2Deg, 0)); //obracanie celownika w stronę punktu uderzenia promienia
 			lookingAt = mouseHit.collider; // na jaki obiekt patrzy
 			if (Input.GetMouseButtonDown(0)) {
-				if (lookingAt.CompareTag("Interactable") && Vector3.Distance(player.position,lookingAt.transform.position) <= 3) { // jeßli jest to obiekt do interakcji
+				if (lookingAt.CompareTag("Interactable") && Vector3.Distance(player.position,lookingAt.transform.position) <= 3) { // jeśli jest to obiekt do interakcji
 					isInteraLoot = mouseHit.collider.GetComponent<interactable>().isLoot; //czy obiekt zawiera przedmioty do zebrania
 					pickables = mouseHit.collider.GetComponent<interactable>().pickables; // przedmioty w obiekcie interakcji
 					interaTime = mouseHit.collider.GetComponent<interactable>().interactionTime; //czas potrzebny na wykonanie interakcji
 					interaText = mouseHit.collider.GetComponent<interactable>().interactionText; //teks do wyświetlenia na progress barze
-					clickedObj = mouseHit.transform;
+					clickedObj = mouseHit.collider;
+					mouseHit.collider.GetComponent<interactable>().playerThatClicked = player.gameObject;
 					isInteraClicked = true;
 					interaTimer = 0;
-					mouseHit.collider.enabled = false;
 					gameObject.GetComponent<gui>().DisplayProgressBar(interaTime, interaText);
 				}
 			}
@@ -119,5 +123,11 @@ public class camControl : MonoBehaviour {
 		}
 
 		Cursor.visible = false;
+	}
+
+	public void CancelInteraProgress()
+	{
+		isInteraClicked = false;
+		gameObject.GetComponent<gui>().CancelProgress();
 	}
 }
