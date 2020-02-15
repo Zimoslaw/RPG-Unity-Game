@@ -65,27 +65,26 @@ public class gui : MonoBehaviour
 	public void DisplayPick(GameObject[] pickables, Transform plyr, Collider clckdObj) //wyświetlenie okna z lootem
 	{
 		int i = 0;
-		pick.GetComponent<guiWindow>().RefreshPickItems();//usuń poprzednie obiekty z gui_pick
+		pick.GetComponent<LootPick>().Refresh();//usuń poprzednie obiekty z gui_pick
 
 		foreach(GameObject p in pickables)
 		{
 			if(p != null)
 			{
-				pick.GetComponent<guiWindow>().itemButtons[i].GetComponent<ItemButton>().item = p;
-				//pick.GetComponent<guiWindow>().itemButtons[i].GetComponent<ItemButton>().player = plyr;
-				pick.GetComponent<guiWindow>().itemButtons[i].GetComponent<ItemButton>().interactable = clckdObj.transform;
-				pick.GetComponent<guiWindow>().itemButtons[i].SetActive(true);
+				pick.GetComponent<LootPick>().itemButtons[i].GetComponent<ItemButton>().item = p;
+				pick.GetComponent<LootPick>().itemButtons[i].GetComponent<ItemButton>().interactable = clckdObj.transform;
+				pick.GetComponent<LootPick>().itemButtons[i].SetActive(true);
 				i++;
 			}
 		}
-		if(i != 0)
+		if(i != 0) // jeśli był jakikolwiek przedmiot do wyświetlenia
 		{
 			pick.rectTransform.anchoredPosition = Input.mousePosition;//pozycja okna taka jak pozycja kursora
 			pick.gameObject.SetActive(true);
 		}
 		else
 		{
-			clckdObj.enabled = false;
+			clckdObj.enabled = false; // wyłącza interakcję z obiektem
 			DisplayInfo("Brak przedmiotów do zebrania");
 		}
 	}
@@ -111,7 +110,7 @@ public class gui : MonoBehaviour
 
 	public void DisplayItemMenu(int index)
 	{
-		itemMenu.GetComponent<guiWindow>().itemIndex = index;
+		itemMenu.GetComponent<ItemMenu>().itemIndex = index;
 		itemMenu.rectTransform.anchoredPosition = Input.mousePosition;//pozycja okna taka jak pozycja kursora
 		itemMenu.gameObject.SetActive(true);
 	}
@@ -126,8 +125,8 @@ public class gui : MonoBehaviour
 			{
 				if(x != null)
 				{
-					inventory.GetComponent<guiWindow>().itemButtons[i].GetComponent<ItemButton>().item = x;
-					inventory.GetComponent<guiWindow>().itemButtons[i].SetActive(true);
+					inventory.GetComponent<InventoryWindow>().itemButtons[i].GetComponent<ItemButton>().item = x;
+					inventory.GetComponent<InventoryWindow>().itemButtons[i].SetActive(true);
 				}
 				i++;
 			}
