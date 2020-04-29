@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class spell : MonoBehaviour
+public class Spell : MonoBehaviour
 {
 	public float attackDamage = 0;
 	public float magicDamage = 0;
@@ -26,9 +26,9 @@ public class spell : MonoBehaviour
 	void OnCollisionEnter(Collision collision) {
 		if (collision.collider.CompareTag("Alive")) {
 			if(attackDamage!=0)
-			collision.collider.GetComponent<alive>().currentHp -= (int)attackDamage;
+			collision.collider.GetComponent<Alive>().currentHp -= (int)attackDamage;
 			if(magicDamage!=0)
-			collision.collider.GetComponent<alive>().currentHp -= (int)Mathf.Floor(magicDamage /  collision.collider.GetComponent<alive>().spirit);
+			collision.collider.GetComponent<Alive>().currentHp -= (int)Mathf.Floor(magicDamage /  collision.collider.GetComponent<Alive>().spirit);
 		}
 		Destroy(gameObject);
 	}

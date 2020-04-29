@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class gui : MonoBehaviour
+public class GUI : MonoBehaviour
 {
 	public Camera cam;
 	public UnityEngine.UI.Image inventory; //okno ekwipunku
@@ -12,6 +12,7 @@ public class gui : MonoBehaviour
 	public UnityEngine.UI.Image progressBarFill; //wypełnienie paska postępu
 	public UnityEngine.UI.Image itemMenu; //okno menu przedmiotu w ekwipunku
 	public UnityEngine.UI.Text infos; //text wiadomości dla gracza
+	public UnityEngine.UI.Image description; //okienko opisu przedmiotu
 
 	float duration = 1;
 	float timer1 = 0;
@@ -73,6 +74,7 @@ public class gui : MonoBehaviour
 			{
 				pick.GetComponent<LootPick>().itemButtons[i].GetComponent<ItemButton>().item = p;
 				pick.GetComponent<LootPick>().itemButtons[i].GetComponent<ItemButton>().interactable = clckdObj.transform;
+				pick.GetComponent<LootPick>().itemButtons[i].GetComponent<ItemButton>().RefreshIcon();
 				pick.GetComponent<LootPick>().itemButtons[i].SetActive(true);
 				i++;
 			}
@@ -100,10 +102,11 @@ public class gui : MonoBehaviour
 
 	public void CancelProgress() //anulowanie czynności
 	{
-		pick.GetComponent<guiWindow>().Close();
+		pick.GetComponent<GuiWindow>().Close();
 		if (isProgress)
 		{
 			progressBar.value = 1;
+			progressBarText.text = "Anulowano";
 			isProgressCancelled = true;
 		}
 	}
@@ -111,6 +114,10 @@ public class gui : MonoBehaviour
 	public void DisplayItemMenu(int index)
 	{
 		itemMenu.GetComponent<ItemMenu>().itemIndex = index;
+		if(index < 8) // jeśli przedmiot jest używany przez gracza
+			itemMenu.GetComponent<ItemMenu>().useButton.interactable = false;
+		else
+			itemMenu.GetComponent<ItemMenu>().useButton.interactable = true;
 		itemMenu.rectTransform.anchoredPosition = Input.mousePosition;//pozycja okna taka jak pozycja kursora
 		itemMenu.gameObject.SetActive(true);
 	}
@@ -126,6 +133,7 @@ public class gui : MonoBehaviour
 				if(x != null)
 				{
 					inventory.GetComponent<InventoryWindow>().itemButtons[i].GetComponent<ItemButton>().item = x;
+					inventory.GetComponent<InventoryWindow>().itemButtons[i].GetComponent<ItemButton>().RefreshIcon();
 					inventory.GetComponent<InventoryWindow>().itemButtons[i].SetActive(true);
 				}
 				i++;
@@ -135,7 +143,21 @@ public class gui : MonoBehaviour
 		else
 		{
 			inventory.gameObject.SetActive(false);
+			itemMenu.gameObject.SetActive(false);
+			CloseItemDescription();
 		}
+	}
+
+	public void DisplayItemDescription(GameObject item)
+	{
+		description.GetComponent<ItemDescription>().UpdateItemInfo(item);
+		description.GetComponent<UnityEngine.UI.Image>().rectTransform.anchoredPosition = Input.mousePosition + new Vector3(1, 1, 0);
+		description.gameObject.SetActive(true);
+	}
+
+	public void CloseItemDescription()
+	{
+		description.gameObject.SetActive(false);
 	}
 
 	public void DisplayInfo(string s) //wyświetlenie wiadomości do gracza na ekran

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class guiWindow : MonoBehaviour
+public class GuiWindow : MonoBehaviour
 {
 	public Transform player = null; // gracz widzący GUI
 	public GameObject[] itemButtons;

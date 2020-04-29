@@ -63,7 +63,7 @@ public class camControl : MonoBehaviour {
 				if(interaTimer >= interaTime + Mathf.Epsilon) {
 					if (isInteraLoot)
 					{
-						gameObject.GetComponent<gui>().DisplayPick(pickables, player, clickedObj);
+						gameObject.GetComponent<GUI>().DisplayPick(pickables, player, clickedObj);
 						interaTimer = 0;
 						isInteraClicked = false;
 					}
@@ -89,15 +89,15 @@ public class camControl : MonoBehaviour {
 			lookingAt = mouseHit.collider; // na jaki obiekt patrzy
 			if (Input.GetMouseButtonDown(0)) {
 				if (lookingAt.CompareTag("Interactable") && Vector3.Distance(player.position,lookingAt.transform.position) <= 3) { // jeśli jest to obiekt do interakcji
-					isInteraLoot = mouseHit.collider.GetComponent<interactable>().isLoot; //czy obiekt zawiera przedmioty do zebrania
-					pickables = mouseHit.collider.GetComponent<interactable>().pickables; // przedmioty w obiekcie interakcji
-					interaTime = mouseHit.collider.GetComponent<interactable>().interactionTime; //czas potrzebny na wykonanie interakcji
-					interaText = mouseHit.collider.GetComponent<interactable>().interactionText; //teks do wyświetlenia na progress barze
+					isInteraLoot = mouseHit.collider.GetComponent<Interactable>().isLoot; //czy obiekt zawiera przedmioty do zebrania
+					pickables = mouseHit.collider.GetComponent<Interactable>().pickables; // przedmioty w obiekcie interakcji
+					interaTime = mouseHit.collider.GetComponent<Interactable>().interactionTime; //czas potrzebny na wykonanie interakcji
+					interaText = mouseHit.collider.GetComponent<Interactable>().interactionText; //teks do wyświetlenia na progress barze
 					clickedObj = mouseHit.collider;
-					mouseHit.collider.GetComponent<interactable>().playerThatClicked = player.gameObject;
+					mouseHit.collider.GetComponent<Interactable>().playerThatClicked = player.gameObject;
 					isInteraClicked = true;
 					interaTimer = 0;
-					gameObject.GetComponent<gui>().DisplayProgressBar(interaTime, interaText);
+					gameObject.GetComponent<GUI>().DisplayProgressBar(interaTime, interaText);
 				}
 			}
 		}
@@ -128,6 +128,6 @@ public class camControl : MonoBehaviour {
 	public void CancelInteraProgress()
 	{
 		isInteraClicked = false;
-		gameObject.GetComponent<gui>().CancelProgress();
+		gameObject.GetComponent<GUI>().CancelProgress();
 	}
 }

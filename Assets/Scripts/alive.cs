@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class alive : MonoBehaviour
+public class Alive : MonoBehaviour
 {
-	public int hp = 1; //makszymalna żywotność (bazowa + mix siły i duszy)
+	public string aliveName;
+
+	public int hp = 1; //maksymalna żywotność (bazowa + mix siły i duszy)
 	public int basicHp = 100; //bazowa żywotność
-	public int currentHp = 1; //aktualna żywotność
+	public float currentHp = 1; //aktualna żywotność
 
 	public int strenght = 1; //siła
 	public int agility = 1; //zręczność
@@ -25,6 +27,10 @@ public class alive : MonoBehaviour
 	public int social = 1; //umiejętnośći społeczne
 	public int learning = 1; //nauka
 
+	public bool canRegenerate = true;
+
+	public bool hostile = false;
+
 	void Start()
     {
 		
@@ -33,14 +39,20 @@ public class alive : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
-    }
+		if(canRegenerate && currentHp < hp)
+		{
+			currentHp += (currentStamina + strenght + spirit) * Time.deltaTime;
+		}
+
+		if(currentHp <= 0)
+			Destroy(gameObject);
+	}
 
 	public void UpdateStats() {
 		hp = (2 * strenght + 2 * spirit) + basicHp;
 		stamina = (5 * strenght) + 10;
-		gameObject.GetComponent<playerControl>().playerMaxSpeed = (256 + (2 * agility)) * MoveSpeed;
-		gameObject.GetComponent<playerControl>().globalCooldown = 2.5f - (agility * 0.01f);
+		gameObject.GetComponent<playerControl>().playerSpeed = (10 + (0.05f * agility)) * MoveSpeed;
+		gameObject.GetComponent<playerControl>().globalCooldown = 2f - (agility * 0.01f);
 		mana = (5 * spirit) + 10;
 	}
 }

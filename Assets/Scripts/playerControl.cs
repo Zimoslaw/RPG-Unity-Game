@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class playerControl : MonoBehaviour {
 
-    public float playerAccelerationSpeed = 0.1f; //prędkość ruszania się z miejsca
-    public float playerMaxSpeed = 256f; //maksymalna prędkość ruchu gracza
+    public float playerSpeed = 10; //prędkość ruszania się z miejsca
+    //public float playerMaxSpeed = 256f; //maksymalna prędkość ruchu gracza
 	public float flipCooldown = 3f; //cooldown przewrotu
     float flipTimer = 0; //licznik czasu od ostatniego przewrotu
 	public float globalCooldown = 2.5f; //co ile można użyć umiejętności
@@ -74,28 +74,38 @@ public class playerControl : MonoBehaviour {
 
 			if(Input.GetKeyDown(KeyCode.I))
 			{
-				camTarget.GetComponent<gui>().DisplayInventory(gameObject);
+				camTarget.GetComponent<GUI>().DisplayInventory(gameObject);
 			}
 
 			if(cooldownTimer >= globalCooldown + Mathf.Epsilon) {
-				if(!camTarget.GetComponent<camControl>().lookingAt.CompareTag("Interactable") && !EventSystem.current.IsPointerOverGameObject()) {
+				if(!camTarget.GetComponent<camControl>().lookingAt.CompareTag("Interactable") && camTarget.GetComponent<camControl>().lookingAt.CompareTag("Alive") && !EventSystem.current.IsPointerOverGameObject()) {
 					if (Input.GetMouseButtonDown(0)) { //przycisk głównego ataku (broń w ręce)
-						weaponType = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().type;
-						attackDamage = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().attackDamage + (gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().attackDamage * (int)Mathf.Floor(gameObject.GetComponent<alive>().strenght * 0.01f * GetComponent<alive>().attackDamage));
-						magicDamage = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().magicDamage + (gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().magicDamage * (int)Mathf.Floor(gameObject.GetComponent<alive>().spirit * 0.01f * GetComponent<alive>().magicDamage));
+						if(gameObject.GetComponent<inventory>().slots[0] != null)
+						{
+							weaponType = gameObject.GetComponent<inventory>().slots[0].GetComponent<Pickable>().type;
+							attackDamage = gameObject.GetComponent<inventory>().slots[0].GetComponent<Pickable>().attackDamage + (gameObject.GetComponent<inventory>().slots[0].GetComponent<Pickable>().attackDamage * (int)Mathf.Floor(gameObject.GetComponent<Alive>().strenght * 0.01f * GetComponent<Alive>().attackDamage));
+							magicDamage = gameObject.GetComponent<inventory>().slots[0].GetComponent<Pickable>().magicDamage + (gameObject.GetComponent<inventory>().slots[0].GetComponent<Pickable>().magicDamage * (int)Mathf.Floor(gameObject.GetComponent<Alive>().spirit * 0.01f * GetComponent<Alive>().magicDamage));
 
-						if (weaponType == "ranged weapon") { //jeśli broń jest dystansowa
-							speed = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().speed; //prędkość pocisku
-							weapon = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().projectile; //pocisk
-							gameObject.GetComponent<skills.ranged>().Cast(gameObject, speed, weapon, attackDamage, magicDamage); //gracz, pocisk, obrażenia
-							cooldownTimer = 0;
+							if(weaponType == "ranged weapon")
+							{ //jeśli broń jest dystansowa
+								speed = gameObject.GetComponent<inventory>().slots[0].GetComponent<Pickable>().speed; //prędkość pocisku
+								weapon = gameObject.GetComponent<inventory>().slots[0].GetComponent<Pickable>().projectile; //pocisk
+																															//gameObject.GetComponent<Skills.Ranged>().Cast(gameObject, speed, weapon, attackDamage, magicDamage); //gracz, pocisk, obrażenia
+								gameObject.GetComponent<Skills>().CastRanged(gameObject, speed, weapon, attackDamage, magicDamage);
+								cooldownTimer = 0;
+							}
+							if(weaponType == "melee weapon")
+							{
+								range = gameObject.GetComponent<inventory>().slots[0].GetComponent<Pickable>().range;
+								angle = gameObject.GetComponent<inventory>().slots[0].GetComponent<Pickable>().angle;
+								weapon = gameObject.GetComponent<inventory>().slots[0].GetComponent<Pickable>().projectile; //wizualna akcja
+								gameObject.GetComponent<Skills>().CastMelee(gameObject, range, angle, weapon, attackDamage, magicDamage); //gracz, zasięg, obrażenia
+								cooldownTimer = 0;
+							}
 						}
-						if (weaponType == "melee weapon") {
-							range = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().range;
-							angle = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().angle;
-							weapon = gameObject.GetComponent<inventory>().slots[0].GetComponent<pickable>().projectile; //wizualna akcja
-							gameObject.GetComponent<skills.melee>().Cast(gameObject, range, angle, weapon, attackDamage, magicDamage); //gracz, zasięg, obrażenia
-							cooldownTimer = 0;
+						else
+						{
+							camTarget.GetComponent<GUI>().DisplayInfo("Nie masz żadnej broni");
 						}
 					}
 				}
@@ -105,15 +115,11 @@ public class playerControl : MonoBehaviour {
 	}
 
     void ForwardMove() {
-        //if (self.velocity.sqrMagnitude < Mathf.Sqrt(playerMaxSpeed)) { //jeżeli prędkość gracza nie przekracza maksymalnej
-			gameObject.transform.Translate(new Vector3(0,-0.5f,1) * playerAccelerationSpeed); //ruch do przodu
-        //
+			gameObject.transform.Translate(new Vector3(0,0, 0.01f) * playerSpeed); //ruch do przodu
     }
 
     void BackwardsMove() {
-        //if (self.velocity.sqrMagnitude < Mathf.Sqrt(playerMaxSpeed)*0.5f) { //jeżeli prędkość gracza nie przekracza połowy maksymalnej
-			gameObject.transform.Translate(new Vector3(0, -0.5f, -1) * playerAccelerationSpeed * 0.5f); //ruch do tyłu
-		//}
+			gameObject.transform.Translate(new Vector3(0,0, -0.01f) * playerSpeed * 0.5f); //ruch do tyłu
     }
 
     void FlipRight() {

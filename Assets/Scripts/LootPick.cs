@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LootPick : guiWindow
+public class LootPick : GuiWindow
 {
 	public Transform clickedObject = null;
 
@@ -18,6 +18,7 @@ public class LootPick : guiWindow
 		{
 			if (Vector3.Distance(player.position, clickedObject.position) > 3) {
 				Close();
+				player.GetComponent<playerControl>().camTarget.GetComponent<GUI>().CloseItemDescription();
 			}
 		}
 	}
