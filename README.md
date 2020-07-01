@@ -1,6 +1,6 @@
 # RPG-Unity-Game
 
-Game made with Unity 2018.3.1f1 without name. Project is pretty much in very early stage.
+Role playing game made with Unity 2018.3.1f1 without name. Project is pretty much in very early stage.
 
 These are standard Unity project files (for desktop).
 
